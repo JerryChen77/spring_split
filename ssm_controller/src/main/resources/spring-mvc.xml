@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd  ">
+
+<context:component-scan base-package="com.aop.controller" use-default-filters="false">
+    <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
+
+    <mvc:default-servlet-handler/>
+<!--    注册驱动——在 SpringMVC 的各个组件中，处理器映射器、处理器适配器、视图解析器称为 SpringMVC 的三大组件。
+使用<mvc:annotation-driven>自动加载 RequestMappingHandlerMapping（处理映射器）和
+RequestMappingHandlerAdapter（ 处 理 适 配 器 ），可用在Spring-xml.xml配置文件中使用
+<mvc:annotation-driven>替代注解处理器和适配器的配置。
+同时使用<mvc:annotation-driven>默认底层就会集成jackson进行对象或集合的json格式字符串的转换。
+-->
+    <mvc:annotation-driven>
+        <!-- 安装FastJson,转换器 -->
+        <mvc:message-converters>
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <!-- 声明转换类型:json -->
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+<!-- 注入异常解析器，该异常解析器十分智能，只要是不用其他设置，只要是有异常都会捕获，并进行相应处理   -->
+    <bean class="com.aop.exceptionResolver.MyExResolver"></bean>
+
+<!--    注册拦截器-->
+    <mvc:interceptors>
+<!--        全局拦截器，未登录过的都需要去登录页面-->
+        <mvc:interceptor>
+            <mvc:mapping path="/user/**"/>
+            <mvc:mapping path="/userLogin/**"/>
+            <!-- <mvc:mapping path="/inter/test*"/>test开头 -->
+            <!-- <mvc:mapping path="/inter/**"/>  /** 任意多级任意路径 -->
+            <mvc:exclude-mapping path="/userLogin/login"/>   <!--不拦截此路径-->
+            <bean class="com.aop.interceptor.MyLoginInterceptor"></bean>   <!--自定义的拦截器类-->
+        </mvc:interceptor>
+
+<!--        文件上传大小拦截器-->
+        <mvc:interceptor>
+            <mvc:mapping path="/user/upload"/>
+            <!--自定义的拦截器类-->
+            <bean class="com.aop.interceptor.UpLoadInterceptor">
+                <property name="maxContentLength" value="10485760"></property>
+            </bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+<!--    配置视图解析器，自动补全前后缀-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+
+    <!-- 上传解析器, id必须是：“multipartResolver”-->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 最大可上传的文件大小  单位：byte  超出后会抛出MaxUploadSizeExceededException异常，可以异常解析器捕获 -->
+<!--        <property name="maxUploadSize" value="10485760"></property>-->
+    </bean>
+</beans>
