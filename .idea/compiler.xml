@@ -7,9 +7,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="ssm_mapper" />
         <module name="ssm_entity" />
         <module name="ssm_service" />
-        <module name="ssm_mapper" />
         <module name="ssm_controller" />
         <module name="ssm_exceptionResolver" />
         <module name="ssm_advice" />
